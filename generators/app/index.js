@@ -106,7 +106,6 @@ module.exports = yeoman.generators.Base.extend({
       var destFile = path.resolve(destinationPath, relative_filepath)
 
       var content = fs.readFileSync(file, 'utf8')
-      console.log('ejs rendering:' + file)
       var renderedContent = ejs.render(content, props)
       fs.writeFileSync(destFile, renderedContent)
 
@@ -120,6 +119,6 @@ module.exports = yeoman.generators.Base.extend({
   },
 
   install: function () {
-    // this.installDependencies()
+    this.installDependencies()
   }
 })
