@@ -1,4 +1,8 @@
+# locally installed npm module dir
 node_modules
 
+# vim tracking file
 Session.vim
 
+# yeoman generator runtime configuration file
+.yo-rc.json

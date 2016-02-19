@@ -1,0 +1,10 @@
+<mvc:View
+    controllerName="<%= namespace %>.view.<%= viewname %>"
+    xmlns:mvc="sap.ui.core.mvc"
+    displayBlock="true"
+    xmlns="sap.m">
+    <Page>
+        <content>
+        </content>
+    </Page>
+</mvc:View>

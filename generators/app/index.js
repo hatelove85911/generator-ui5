@@ -11,6 +11,9 @@ var touch = require('touch')
 var ejs = require('ejs')
 
 module.exports = yeoman.generators.Base.extend({
+  constructor: function () {
+    yeoman.generators.apply(this, arguments)
+  },
   initializing: function () {
     this.bps = [['1.28.0', '1.30.0', 'bp_1.28'],
       ['1.30.0', '99.99.99', 'bp_1.30']]
@@ -65,7 +68,9 @@ module.exports = yeoman.generators.Base.extend({
     }.bind(this))
   },
 
-  configuring: function () {},
+  configuring: function () {
+    this.config.set(this.props)
+  },
 
   pickBestPractice: function () {
     var ui5version = this.props.ui5version
