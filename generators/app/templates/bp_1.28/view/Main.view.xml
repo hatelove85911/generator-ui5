@@ -1,0 +1,11 @@
+<mvc:View
+    controllerName="<%= namespace %>.view.Main"
+    xmlns:mvc="sap.ui.core.mvc"
+    displayBlock="true"
+    xmlns="sap.m">
+    <Page title="{i18n>mainTitle}">
+        <content>
+            <Button text="click me" press="clickme"/>
+        </content>
+    </Page>
+</mvc:View>
