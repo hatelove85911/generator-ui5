@@ -40,15 +40,22 @@ module.exports = yeoman.generators.Base.extend({
       name: 'gitRepoUrl',
       message: "what's your git repository?"
     }
+    var askForSapOrOpenUI5 = {
+      name: 'ui5type',
+      message: "what's the UI5 library type ?",
+      type: 'list',
+      default: 'sapui5',
+      choices: ['sapui5', 'openui5']
+    }
     var askForUI5Version = {
       name: 'ui5version',
       message: 'which version of UI5 ?'
     }
     var askForNamespace = {
       name: 'namespace',
-      message: "what's the name space ?"
+      message: "what's the namespace ?"
     }
-    var prompts = [askForAppName, askForAppDesc, askForGitRepoUrl, askForUI5Version, askForNamespace]
+    var prompts = [askForAppName, askForAppDesc, askForGitRepoUrl, askForSapOrOpenUI5, askForUI5Version, askForNamespace]
 
     this.prompt(prompts, function (props) {
       this.props = props
@@ -57,7 +64,7 @@ module.exports = yeoman.generators.Base.extend({
       var askForLocalUI5Resource = {
         name: 'localui5src',
         message: "what's the path to the local UI5 core ?",
-        default: '/libs/sapui5/' + props.ui5version + '/runtime/resources/sap-ui-core.js'
+        default: '/libs/' + props.ui5type + '/' + props.ui5version + '/runtime/resources/sap-ui-core.js'
       }
       var prompts2 = [askForLocalUI5Resource]
       this.prompt(prompts2, function (props) {

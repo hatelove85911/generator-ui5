@@ -1,5 +1,5 @@
 {
-  "name": "<%= applicationDesc %>",
+  "name": "<%= applicationName %>",
   "version": "0.1.0",
   "description": "<%= applicationDesc %>",
   "repository": {
