@@ -17,15 +17,6 @@ sap.ui.define([
     getApp: function () {
       return this.getComponent().__App__
     },
-    navTo: function (sTargetViewName, oData, sTransitionName) {
-      var oApp,
-        oView
-
-      oApp = this.getApp()
-      oView = this.getRouter().getView(sTargetViewName, 'XML')
-      oApp.addPage(oView)
-      oApp.to(oView.getId(), sTransitionName || 'slide', oData)
-    },
     onNavBack: function (oEvent) {
       var oHistory, sPreviousHash
 

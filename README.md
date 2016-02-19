@@ -2,7 +2,6 @@
 ui5 generator
 
 # TODO
-- view generator
-- support cli option to generate the a project
+- support cli argument to generate a project with specified name
 - better ui5 1.28 best practice
 - add latest best practice

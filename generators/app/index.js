@@ -12,7 +12,7 @@ var ejs = require('ejs')
 
 module.exports = yeoman.generators.Base.extend({
   constructor: function () {
-    yeoman.generators.apply(this, arguments)
+    yeoman.generators.Base.apply(this, arguments)
   },
   initializing: function () {
     this.bps = [['1.28.0', '1.30.0', 'bp_1.28'],
