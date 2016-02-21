@@ -1,11 +1,4 @@
 {
-  "name": "<%= applicationName %>",
-  "version": "0.1.0",
-  "description": "<%= applicationDesc %>",
-  "repository": {
-    "type": "git",
-    "url": "<%= gitRepoUrl %>"
-  },
   "devDependencies": {
     "eslint": "^2.1.0",
     "eslint-config-standard": "^5.1.0",

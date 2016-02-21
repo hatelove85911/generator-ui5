@@ -20,9 +20,10 @@
   "dependencies": {
     "chalk": "^1.0.0",
     "ejs": "^2.4.1",
-    "fs-walk": "0.0.1",
     "mkdirp": "^0.5.1",
+    "q": "^1.4.1",
     "semver": "^5.1.0",
+    "simple-git": "^1.25.0",
     "touch": "^1.0.0",
     "walk": "^2.3.9",
     "yeoman-generator": "^0.21.1",

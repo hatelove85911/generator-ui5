@@ -1,8 +1,11 @@
 # locally installed npm module dir
 node_modules
 
-# vim tracking file
+# ignore the tracking file of vim obsession file
 Session.vim
 
 # yeoman generator runtime configuration file
 .yo-rc.json
+
+# ignore mac os special files
+.DS_Store
