@@ -9,9 +9,16 @@ var mkdirp = require('mkdirp')
 var semver = require('semver')
 var touch = require('touch')
 var ejs = require('ejs')
-// var git = require('nodegit')
 var git = require('simple-git')
-var Q = require('q')
+var childProcess = require('child_process')
+
+// global variabls
+var isGitInstalled = false
+var githubUsername = ''
+var isGitRemoteSet = false
+var potencialAppname = ''
+var setting = {}
+var bestPractice = ''
 
 module.exports = yeoman.generators.Base.extend({
   constructor: function () {
@@ -19,143 +26,188 @@ module.exports = yeoman.generators.Base.extend({
 
     this.argument('projectName', {type: String, required: false})
   },
-  initializing: function () {
-    var that = this
-    var done = this.async()
-
-    // best pratice range and the corresponding template folder
-    this.bps = [['1.28.0', '1.30.0', 'bp_1.28'],
-      ['1.30.0', '99.99.99', 'bp_1.30']]
-
-    // if project name argument is provided, then mkdir the project dir and change
-    // destination root to the project dir
-    if (this.projectName) {
-      mkdirp.sync(this.destinationPath(this.projectName))
-      this.destinationRoot(this.destinationPath(this.projectName))
-    }
-
-    // get github username
-    var getGithubUsername = Q.nbind(this.user.github.username, this.user.github)()
-    getGithubUsername.then(function (username) {
-      that.github_username = username
-    })
-
-    // check whether git repository is already initialized at the destination path
-    git = git(this.destinationPath())
-    var gitInitProm = 'done'
-    try {
-      fs.accessSync(this.destinationPath('.git'), fs.F_OK)
-    } catch (e) {
-      gitInitProm = Q.nbind(git.init, git)(false)
-    }
-
-    var getRemoteProm = Q.nbind(git.getRemotes, git)()
-    getRemoteProm.then(function (remotes) {
-      that.isGitRemoteSet = !!(remotes.length > 0 && remotes[0].name)
-    })
-
-    Q.all([ gitInitProm, getGithubUsername, getRemoteProm ]).finally(function () {
-      done()
-    })
-  },
-  prompting: function () {
-    var that = this
-    var applicationName = this.determineAppname()
-    var done = this.async()
-
-    // Have Yeoman greet the user.
-    this.log(yosay(
-      'Welcome to the hunky-dory ' + chalk.red('ui5') + ' generator!'
-    ))
-
-    // first prompts
-    var askForGitRepoUrl = {
-      name: 'gitRepoUrl',
-      message: "what's your git repository ?",
-      default: function () {
-        var urlArray = ['git@github.com:', that.github_username || that.user.git.name(), '/', applicationName, '.git']
-        return urlArray.join('')
-      },
-      when: function () {
-        return !that.isGitRemoteSet
+  initializing: {
+    initBestPractice: function () {
+      this.bps = [['1.28.0', '1.30.0', 'bp_1.28'],
+        ['1.30.0', '99.99.99', 'bp_1.28']]
+    },
+    mkPrjDir: function () {
+      if (this.projectName) {
+        mkdirp.sync(this.destinationPath(this.projectName))
+        this.destinationRoot(this.destinationPath(this.projectName))
       }
-    }
-    var askForAppDesc = {
-      name: 'applicationDesc',
-      message: 'Describe your application briefly'
-    }
-    var askForUI5Type = {
-      name: 'ui5type',
-      message: 'openui5 or sapui5 ?',
-      type: 'list',
-      default: 'sapui5',
-      choices: ['sapui5', 'openui5']
-    }
-    var askForUI5Version = {
-      name: 'ui5version',
-      message: 'which version of UI5 ?',
-      validate: function (response) {
-        return !!semver.valid(response)
-      }
-    }
-    var askForNamespace = {
-      name: 'namespace',
-      message: "what's the namespace ?",
-      validate: function () {
-        return true
-      }
-    }
-    var prompts = [askForGitRepoUrl, askForAppDesc, askForUI5Type, askForUI5Version, askForNamespace]
+    },
+    checkGitInstalled: function () {
+      isGitInstalled = Boolean(childProcess.execSync('git --version', {
+        encoding: 'utf8'
+      }))
 
-    this.prompt(prompts, function (props) {
-      this.props = props
-
-      // second prompts based on
-      var askForLocalUI5Resource = {
-        name: 'localui5src',
-        message: "what's the path to the local UI5 core ?",
-        default: '/libs/' + props.ui5type + '/' + props.ui5version + '/runtime/resources/sap-ui-core.js'
+      if (isGitInstalled) {
+        this.initializing._getGithubUser.call(this)
+        this.initializing._initGitRepo.call(this)
+        this.initializing._checkGitRemoteSet.call(this)
       }
-      var prompts2 = [askForLocalUI5Resource]
-      this.prompt(prompts2, function (props) {
-        this.props.localui5src = props.localui5src
-        this.props.applicationName = (this.props.gitRepoUrl && this.props.gitRepoUrl.match(/\/(.*)\.git/)[1]) || applicationName
+    },
+    _getGithubUser: function () {
+      var done = this.async()
+      this.user.github.username(function (err, username) {
+        if (err) {
+          this.log(err)
+        } else {
+          githubUsername = username
+        }
         done()
       }.bind(this))
-    }.bind(this))
+    },
+    _initGitRepo: function () {
+      git = git(this.destinationPath())
+      try {
+        fs.accessSync(this.destinationPath('.git'), fs.F_OK)
+      } catch (e) {
+        git.init(false)
+      }
+    },
+    _checkGitRemoteSet: function () {
+      git.getRemotes(function (err, remotes) {
+        if (err) {
+          this.log(err)
+        } else {
+          isGitRemoteSet = Boolean(remotes.length > 0 && remotes[0].name)
+          potencialAppname = (remotes[0] && remotes[0].name.match(/\/(.*)\.git/) && remotes[0].name.match(/\/(.*)\.git/)[1])
+        }
+      }.bind(this))
+    }
   },
+  prompting: {
+    greet: function () {
+      this.log(yosay(
+        'Welcome to the hunky-dory ' + chalk.red('ui5') + ' generator!'
+      ))
+    },
+    askAppname: function () {
+      var done = this.async()
+      this.prompt({
+        name: 'applicationName',
+        message: "What's your application name",
+        default: potencialAppname || this.determineAppname()
+      }, function (answers) {
+        setting.applicationName = answers.applicationName
+        done()
+      })
+    },
+    askAppDesc: function () {
+      var done = this.async()
+      this.prompt({
+        name: 'applicationDesc',
+        message: 'Describe your application briefly'
+      }, function (answers) {
+        setting.applicationDesc = answers.applicationDesc
+        done()
+      })
+    },
+    askNamespace: function () {
+      var done = this.async()
+      this.prompt({
+        name: 'namespace',
+        message: "what's the namespace ?",
+        validate: function () {
+          return true
+        }
+      }, function (answers) {
+        setting.namespace = answers.namespace
+        done()
+      })
+    },
+    askGitRepoUrl: function () {
+      var done = this.async()
+      var that = this
 
-  configuring: function () {
-    var done = this.async()
-    this.config.set(this.props)
-    // git config
-    if (this.props.gitRepoUrl) {
-      git.addRemote('origin', this.props.gitRepoUrl, function () {
+      this.prompt({
+        name: 'gitRepoUrl',
+        message: "what's your git repository ?",
+        default: function () {
+          return ['git@github.com:', githubUsername || that.user.git.name(), '/', setting.applicationName, '.git'].join('')
+        },
+        when: function () {
+          var shouldAsk = isGitInstalled && !isGitRemoteSet
+          if (!shouldAsk) {
+            done()
+          }
+          return shouldAsk
+        }
+      }, function (answers) {
+        setting.gitRepoUrl = answers.gitRepoUrl
+        done()
+      })
+    },
+    askUI5Type: function () {
+      var done = this.async()
+      this.prompt({
+        name: 'ui5type',
+        message: 'openui5 or sapui5 ?',
+        type: 'list',
+        default: 'sapui5',
+        choices: ['sapui5', 'openui5']
+      }, function (answers) {
+        setting.ui5type = answers.ui5type
+        done()
+      })
+    },
+    askUI5Version: function () {
+      var done = this.async()
+      this.prompt({
+        name: 'ui5version',
+        message: 'which version of UI5 ?',
+        validate: function (response) {
+          return Boolean(semver.valid(response))
+        }
+      }, function (answers) {
+        setting.ui5version = answers.ui5version
+        done()
+      })
+    },
+    askLocalUI5Resource: function () {
+      var done = this.async()
+
+      this.prompt({
+        name: 'localui5src',
+        message: "what's the path to the local UI5 core ?",
+        default: '/libs/' + setting.ui5type + '/' + setting.ui5version + '/runtime/resources/sap-ui-core.js'
+      }, function (answers) {
+        setting.localui5src = answers.localui5src
         done()
       })
     }
   },
-
-  pickBestPractice: function () {
-    var ui5version = this.props.ui5version
+  configuring: {
+    saveSetting: function () {
+      this.config.set(setting)
+    },
+    addGitRemote: function () {
+      if (isGitInstalled && !isGitRemoteSet && setting.gitRepoUrl) {
+        git.addRemote('origin', setting.gitRepoUrl)
+      }
+    }
+  },
+  determineBestPractice: function () {
     var selectedBp = this.bps.find(function (bp) {
-      return semver.gte(ui5version, bp[0]) && semver.lt(ui5version, bp[1])
+      return semver.gte(setting.ui5version, bp[0]) && semver.lt(setting.ui5version, bp[1])
     })
     if (selectedBp) {
-      this.bpPath = selectedBp[2]
+      bestPractice = selectedBp[2]
     }
   },
 
   writing: function () {
     var done = this.async()
-    var bpPath = this.templatePath(this.bpPath)
+    var bpPath = this.templatePath(bestPractice)
     var destinationPath = this.destinationPath()
 
     // start walking through every file and directory in the best practice directory
     var walker = walk.walk(bpPath)
     walker.on('directory', function (root, stat, next) {
-      var relative_dirpath = path.relative(bpPath, path.resolve(root, stat.name))
-      var destdir = path.resolve(destinationPath, relative_dirpath)
+      var relativeDirPath = path.relative(bpPath, path.resolve(root, stat.name))
+      var destdir = path.resolve(destinationPath, relativeDirPath)
 
       mkdirp(destdir, function (err) {
         if (err) {
@@ -168,14 +220,13 @@ module.exports = yeoman.generators.Base.extend({
     })
 
     // start walking through file, read every file render them using ejs and output
-    var props = this.props
     walker.on('file', function (root, stat, next) {
       var file = path.resolve(root, stat.name)
-      var relative_filepath = path.relative(bpPath, file)
-      var destFile = path.resolve(destinationPath, relative_filepath)
+      var relativeFilePath = path.relative(bpPath, file)
+      var destFile = path.resolve(destinationPath, relativeFilePath)
 
       var content = fs.readFileSync(file, 'utf8')
-      var renderedContent = ejs.render(content, props)
+      var renderedContent = ejs.render(content, setting)
       fs.writeFileSync(destFile, renderedContent)
 
       next()
