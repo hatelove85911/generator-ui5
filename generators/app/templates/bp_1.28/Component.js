@@ -1,7 +1,12 @@
 /* global sap, jQuery */
 sap.ui.define([
-  'sap/ui/core/UIComponent'
-], function (UIComponent) {
+  'sap/ui/core/UIComponent',
+  'sap/m/routing/Router',
+  'sap/ui/core/util/MockServer',
+  'sap/ui/model/odata/ODataModel',
+  'sap/ui/model/json/JSONModel',
+  'sap/ui/model/resource/ResourceModel'
+], function (UIComponent, Router, MockServer, ODataModel, JSONModel, ResourceModel) {
   'use strict'
   return UIComponent.extend('<%= namespace %>.Component', {
     metadata: {
@@ -25,20 +30,24 @@ sap.ui.define([
       },
       routing: {
         config: {
-          routerClass: sap.ui.core.routing.Router,
+          routerClass: Router,
           viewType: 'XML',
           viewPath: '<%= namespace %>.view',
-          targetAggregation: 'pages',
-          clearTarget: false
+          controlId: 'idAppControl',
+          controlAggregation: 'pages',
+          trainsition: 'slide'
         },
-        routes: [
-          {
-            pattern: '',
-            name: 'main',
-            view: 'Main',
-            targetControl: 'idAppControl'
+        routes: [{
+          pattern: '',
+          name: 'home',
+          target: 'home'
+        }],
+        targets: {
+          home: {
+            viewName: 'Main',
+            viewLevel: 1
           }
-        ]
+        }
       }
     },
     init: function () {
@@ -56,7 +65,7 @@ sap.ui.define([
       }())
 
       // set i18n model
-      var i18nModel = new sap.ui.model.resource.ResourceModel({
+      var i18nModel = new ResourceModel({
         bundleUrl: [rootPath, mConfig.resourceBundle].join('/')
       })
       this.setModel(i18nModel, 'i18n')
@@ -66,8 +75,7 @@ sap.ui.define([
 
       // Mock Server
       if (jQuery.sap.getUriParameters().get('responderOn') === 'true') {
-        jQuery.sap.require('sap.ui.core.util.MockServer')
-        var oMockServer = new sap.ui.core.util.MockServer({
+        var oMockServer = new MockServer({
           rootUri: sServiceUrl
         })
         var sMetadataUrl = rootPath + '/model/metadata.xml'
@@ -76,11 +84,11 @@ sap.ui.define([
         oMockServer.start()
       }
 
-      var oModel = new sap.ui.model.odata.ODataModel(sServiceUrl, true)
+      var oModel = new ODataModel(sServiceUrl, true)
       this.setModel(oModel)
 
       // set device model
-      var deviceModel = new sap.ui.model.json.JSONModel({
+      var deviceModel = new JSONModel({
         isTouch: sap.ui.Device.support.touch,
         isNoTouch: !sap.ui.Device.support.touch,
         isPhone: sap.ui.Device.system.phone,

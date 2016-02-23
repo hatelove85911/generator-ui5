@@ -73,8 +73,11 @@ module.exports = yeoman.generators.Base.extend({
           this.log(err)
         } else {
           isGitRemoteSet = Boolean(remotes.length > 0 && remotes[0].name)
-          var repoNameRegex = /([^/]*)\.git$/
-          potencialAppname = (remotes[0] && remotes[0].refs.fetch.match(repoNameRegex) && remotes[0].refs.fetch.match(repoNameRegex)[1])
+          if (remotes[0] && remotes[0].refs && remotes[0].refs.fetch) {
+            var repoNameRegex = /([^/]*)\.git$/
+            var match = remotes[0].refs.fetch.match(repoNameRegex)
+            potencialAppname = match && match[1]
+          }
         }
       }.bind(this))
     }
