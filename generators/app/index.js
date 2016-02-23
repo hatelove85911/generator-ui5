@@ -68,12 +68,13 @@ module.exports = yeoman.generators.Base.extend({
       }
     },
     _checkGitRemoteSet: function () {
-      git.getRemotes(function (err, remotes) {
+      git.getRemotes(true, function (err, remotes) {
         if (err) {
           this.log(err)
         } else {
           isGitRemoteSet = Boolean(remotes.length > 0 && remotes[0].name)
-          potencialAppname = (remotes[0] && remotes[0].name.match(/\/(.*)\.git/) && remotes[0].name.match(/\/(.*)\.git/)[1])
+          var repoNameRegex = /([^/]*)\.git$/
+          potencialAppname = (remotes[0] && remotes[0].refs.fetch.match(repoNameRegex) && remotes[0].refs.fetch.match(repoNameRegex)[1])
         }
       }.bind(this))
     }
@@ -119,26 +120,20 @@ module.exports = yeoman.generators.Base.extend({
       })
     },
     askGitRepoUrl: function () {
-      var done = this.async()
-      var that = this
-
-      this.prompt({
-        name: 'gitRepoUrl',
-        message: "what's your git repository ?",
-        default: function () {
-          return ['git@github.com:', githubUsername || that.user.git.name(), '/', setting.applicationName, '.git'].join('')
-        },
-        when: function () {
-          var shouldAsk = isGitInstalled && !isGitRemoteSet
-          if (!shouldAsk) {
-            done()
+      if (isGitInstalled && !isGitRemoteSet) {
+        var that = this
+        var done = this.async()
+        this.prompt({
+          name: 'gitRepoUrl',
+          message: "what's your git repository ?",
+          default: function () {
+            return ['git@github.com:', githubUsername || that.user.git.name(), '/', setting.applicationName, '.git'].join('')
           }
-          return shouldAsk
-        }
-      }, function (answers) {
-        setting.gitRepoUrl = answers.gitRepoUrl
-        done()
-      })
+        }, function (answers) {
+          setting.gitRepoUrl = answers.gitRepoUrl
+          done()
+        })
+      }
     },
     askUI5Type: function () {
       var done = this.async()
