@@ -37,20 +37,31 @@ sap.ui.define([
           controlAggregation: "<%= applicationType === 'fs' ? 'pages' : 'detailPages' %>",
           trainsition: 'slide'
         },
-        <% if (applicationType === 'fs') { %>
         routes: [{
-          pattern: '',
           name: 'home',
+          pattern: '',
           target: 'home'
-        }],
-        targets: {
+        }<% if (applicationType === 'md') { %>,{
+          name: 'detail',
+          pattern: 'detail',
+          target: 'detail'
+        }<% } %>],
+        targets:{<% if (applicationType === 'fs') { %>
           home: {
             viewName: 'Main',
             viewLevel: 1
-          }
+          }<% } else { %>
+          home: {
+            viewName: 'Master',
+            viewLevel: 1,
+            controlAggregation: "masterPages",
+          },
+          detail: {
+            viewName: 'Detail',
+            viewLevel: 2
+          }<% } %>
         }
-        <% } else { %>
-        <% } %>
+        
       }
     },
     init: function () {
