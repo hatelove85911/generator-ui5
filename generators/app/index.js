@@ -109,6 +109,25 @@ module.exports = yeoman.generators.Base.extend({
         done()
       })
     },
+    askAppType: function () {
+      var done = this.async()
+      this.prompt({
+        name: 'applicationType',
+        message: "what's your application type",
+        type: 'list',
+        default: 'fs',
+        choices: [{
+          name: 'Full Screen',
+          value: 'fs'
+        }, {
+          name: 'Master Detail',
+          value: 'md'
+        }]
+      }, function (answers) {
+        setting.applicationType = answers.applicationType
+        done()
+      })
+    },
     askNamespace: function () {
       var done = this.async()
       this.prompt({
@@ -218,7 +237,12 @@ module.exports = yeoman.generators.Base.extend({
     })
 
     // start walking through file, read every file render them using ejs and output
+    var appTypeExcludeRegex = setting.applicationType === 'fs' ? /(Master|Detail).(view|controller).(xml|js)/ : /Main.(view|controller).(xml|js)/
     walker.on('file', function (root, stat, next) {
+      if (appTypeExcludeRegex.test(stat.name)) {
+        next()
+        return
+      }
       var file = path.resolve(root, stat.name)
       var relativeFilePath = path.relative(bpPath, file)
       var destFile = path.resolve(destinationPath, relativeFilePath)

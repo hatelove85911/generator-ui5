@@ -3,5 +3,5 @@
     xmlns:mvc="sap.ui.core.mvc"
     displayBlock="true"
     xmlns="sap.m">
-    <App id="idAppControl" />
+    <<%= applicationType === 'fs' ? 'App' : 'SplitApp' %> id="idAppControl" />
 </mvc:View>

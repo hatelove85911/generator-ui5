@@ -34,9 +34,10 @@ sap.ui.define([
           viewType: 'XML',
           viewPath: '<%= namespace %>.view',
           controlId: 'idAppControl',
-          controlAggregation: 'pages',
+          controlAggregation: "<%= applicationType === 'fs' ? 'pages' : 'detailPages' %>",
           trainsition: 'slide'
         },
+        <% if (applicationType === 'fs') { %>
         routes: [{
           pattern: '',
           name: 'home',
@@ -48,6 +49,8 @@ sap.ui.define([
             viewLevel: 1
           }
         }
+        <% } else { %>
+        <% } %>
       }
     },
     init: function () {
