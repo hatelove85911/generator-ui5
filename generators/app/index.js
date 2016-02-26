@@ -157,19 +157,6 @@ module.exports = yeoman.generators.Base.extend({
         })
       }
     },
-    askUI5Type: function () {
-      var done = this.async()
-      this.prompt({
-        name: 'ui5type',
-        message: 'openui5 or sapui5 ?',
-        type: 'list',
-        default: 'sapui5',
-        choices: ['sapui5', 'openui5']
-      }, function (answers) {
-        setting.ui5type = answers.ui5type
-        done()
-      })
-    },
     askUI5Version: function () {
       var done = this.async()
       this.prompt({
@@ -180,18 +167,6 @@ module.exports = yeoman.generators.Base.extend({
         }
       }, function (answers) {
         setting.ui5version = answers.ui5version
-        done()
-      })
-    },
-    askLocalUI5Resource: function () {
-      var done = this.async()
-
-      this.prompt({
-        name: 'localui5src',
-        message: "what's the path to the local UI5 core ?",
-        default: '/libs/' + setting.ui5type + '/' + setting.ui5version + '/runtime/resources/sap-ui-core.js'
-      }, function (answers) {
-        setting.localui5src = answers.localui5src
         done()
       })
     }

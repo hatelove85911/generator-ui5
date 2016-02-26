@@ -9,3 +9,6 @@ Session.vim
 
 # ignore mac os special files
 .DS_Store
+
+# resources/
+resources/
