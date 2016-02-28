@@ -1,9 +1,7 @@
 'use strict'
 var yeoman = require('yeoman-generator')
-var walk = require('walk')
 var fs = require('fs')
 var path = require('path')
-var ejs = require('ejs')
 
 module.exports = yeoman.generators.Base.extend({
   constructor: function () {
@@ -22,16 +20,7 @@ module.exports = yeoman.generators.Base.extend({
       destinationPath = this.destinationPath()
     }
 
-    var walker = walk.walk(this.templatePath())
-    // start walking through file, read every file render them using ejs and output
-    walker.on('file', function (root, stat, next) {
-      var viewFileName = stat.name.replace(/template/, props.viewname)
-      var destFile = path.resolve(destinationPath, viewFileName)
-
-      var content = fs.readFileSync(path.resolve(root, stat.name), 'utf8')
-      var renderedContent = ejs.render(content, props)
-      fs.writeFileSync(destFile, renderedContent)
-      next()
-    })
+    this.fs.copyTpl(this.templatePath('template.view.xml'), path.resolve(destinationPath, this.viewname + '.view.xml'), props)
+    this.fs.copyTpl(this.templatePath('template.controller.js'), path.resolve(destinationPath, this.viewname + '.controller.js'), props)
   }
 })
