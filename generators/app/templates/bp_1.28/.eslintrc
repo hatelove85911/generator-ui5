@@ -6,6 +6,6 @@
   },
   "globals": {
     "sap": true,
-    "<%= namespace.split('.')[0] %>"
+    "<%= namespace.split('.')[0] %>": true
   }
 }
