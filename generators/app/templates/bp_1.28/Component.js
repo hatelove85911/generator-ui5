@@ -12,7 +12,7 @@ sap.ui.define([
     metadata: {
       name: '<%= namespace %>',
       version: '1.0',
-      includes: [],
+      includes: ['css/style.css'],
       dependencies: {
         libs: ['sap.m'],
         components: []
